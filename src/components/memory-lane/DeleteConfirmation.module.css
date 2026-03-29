@@ -1,0 +1,105 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 1rem;
+  animation: fadeIn 0.2s ease;
+}
+
+.modal {
+  background: #262626;
+  border-radius: 16px;
+  padding: 2rem;
+  max-width: 400px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
+  animation: slideUp 0.3s ease;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #e74c3c;
+}
+
+.title {
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: 1.5rem;
+  color: var(--ml-text);
+  margin: 0 0 1rem;
+}
+
+.message {
+  color: var(--ml-text-light);
+  line-height: 1.6;
+  margin: 0 0 1.5rem;
+}
+
+.message strong {
+  color: var(--ml-text);
+}
+
+.actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.cancelButton,
+.confirmButton {
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-weight: 500;
+}
+
+.cancelButton {
+  background: #333;
+  color: var(--ml-text-light);
+  border: 1px solid #555;
+}
+
+.cancelButton:hover {
+  background: #444;
+}
+
+.confirmButton {
+  background: #e74c3c;
+  color: #fff;
+  border: 1px solid rgba(231, 76, 60, 0.4);
+}
+
+.confirmButton:hover {
+  background: #c0392b;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
