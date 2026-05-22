@@ -9,20 +9,6 @@
   overflow: hidden;
 }
 
-.hero::before {
-  content: "";
-  position: absolute;
-  inset: 12% 10% auto;
-  height: 220px;
-  background: radial-gradient(
-    circle,
-    rgba(255, 255, 255, 0.08),
-    transparent 70%
-  );
-  filter: blur(24px);
-  pointer-events: none;
-}
-
 .content {
   text-align: center;
   z-index: 1;
