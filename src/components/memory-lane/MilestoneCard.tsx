@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import Image from "next/image";
 import { FaTimes } from "react-icons/fa";
 import { Milestone } from "@/types/milestone";
@@ -90,15 +91,13 @@ export default function MilestoneCard({
     }
   };
 
-  const openModal = (imageUrl: string) => {
+  const openModal = useCallback((imageUrl: string) => {
     setModalImage(imageUrl);
-    document.body.style.overflow = "hidden";
-  };
+  }, []);
 
-  const closeModal = () => {
+  const closeModal = useCallback(() => {
     setModalImage(null);
-    document.body.style.overflow = "";
-  };
+  }, []);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -108,7 +107,54 @@ export default function MilestoneCard({
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [closeModal, modalImage]);
+
+  useEffect(() => {
+    if (!modalImage) {
+      return;
+    }
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
   }, [modalImage]);
+
+  const canUseDocument = typeof document !== "undefined";
+  const expandedImageDialog = modalImage && canUseDocument
+    ? createPortal(
+        <div
+          className={styles.modalOverlay}
+          onClick={closeModal}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Full size image"
+        >
+          <button
+            className={styles.modalClose}
+            onClick={(e) => {
+              e.stopPropagation();
+              closeModal();
+            }}
+            aria-label="Close image"
+          >
+            <FaTimes aria-hidden="true" />
+          </button>
+          <div className={styles.modalContent}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={modalImage}
+              alt="Full size view"
+              className={styles.modalImage}
+              onClick={(e) => e.stopPropagation()}
+            />
+          </div>
+        </div>,
+        document.body,
+      )
+    : null;
 
   return (
     <article
@@ -169,40 +215,7 @@ export default function MilestoneCard({
         />
       )}
 
-      {modalImage && (
-        <div
-          className={styles.modalOverlay}
-          onClick={closeModal}
-          role="dialog"
-          aria-modal="true"
-          aria-label="Full size image"
-        >
-          <button
-            className={styles.modalClose}
-            onClick={closeModal}
-            aria-label="Close image"
-          >
-            <FaTimes aria-hidden="true" />
-          </button>
-          <div
-            className={styles.modalContent}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <Image
-              src={modalImage}
-              alt="Full size view"
-              fill
-              sizes="100vw"
-              className={styles.modalImage}
-              unoptimized={
-                modalImage.includes("firebasestorage.googleapis.com") ||
-                modalImage.includes("storage.googleapis.com")
-              }
-              priority
-            />
-          </div>
-        </div>
-      )}
+      {expandedImageDialog}
     </article>
   );
 }

@@ -1,14 +1,29 @@
 import React from "react";
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import MilestoneCard from "@/components/memory-lane/MilestoneCard";
 import { Milestone } from "@/types/milestone";
 
 // Mock next/image
 jest.mock("next/image", () => ({
   __esModule: true,
-  default: function MockImage({ src, alt }: { src: string; alt: string }) {
+  default: function MockImage({
+    src,
+    alt,
+    fill,
+    priority,
+    unoptimized,
+    ...props
+  }: React.ImgHTMLAttributes<HTMLImageElement> & {
+    fill?: boolean;
+    priority?: boolean;
+    unoptimized?: boolean;
+  }) {
+    void fill;
+    void priority;
+    void unoptimized;
+
     // eslint-disable-next-line @next/next/no-img-element
-    return <img src={src} alt={alt} />;
+    return <img src={src} alt={alt} {...props} />;
   },
 }));
 
@@ -31,9 +46,7 @@ describe("MilestoneCard", () => {
   it("should render the milestone description", () => {
     render(<MilestoneCard milestone={mockMilestone} index={0} />);
 
-    expect(
-      screen.getByText("This is a test description."),
-    ).toBeInTheDocument();
+    expect(screen.getByText("This is a test description.")).toBeInTheDocument();
   });
 
   it("should render formatted date", () => {
@@ -55,6 +68,85 @@ describe("MilestoneCard", () => {
     expect(img.getAttribute("src")).toMatch(
       /firebasestorage\.googleapis\.com|\/images\//,
     );
+  });
+
+  it("should expand images into a page-level dialog", () => {
+    render(<MilestoneCard milestone={mockMilestone} index={0} />);
+
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: /view test milestone - photo 1 full size/i,
+      }),
+    );
+
+    const dialog = screen.getByRole("dialog", { name: /full size image/i });
+    expect(dialog).toBeInTheDocument();
+    expect(dialog.parentElement).toBe(document.body);
+  });
+
+  it("should close the expanded image when the backdrop is clicked", () => {
+    render(<MilestoneCard milestone={mockMilestone} index={0} />);
+
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: /view test milestone - photo 1 full size/i,
+      }),
+    );
+
+    fireEvent.click(screen.getByRole("dialog", { name: /full size image/i }));
+
+    expect(
+      screen.queryByRole("dialog", { name: /full size image/i }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("should keep the expanded image open when the image is clicked", () => {
+    render(<MilestoneCard milestone={mockMilestone} index={0} />);
+
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: /view test milestone - photo 1 full size/i,
+      }),
+    );
+
+    fireEvent.click(screen.getByAltText("Full size view"));
+
+    expect(
+      screen.getByRole("dialog", { name: /full size image/i }),
+    ).toBeInTheDocument();
+  });
+
+  it("should close the expanded image when the dark frame around the image is clicked", () => {
+    render(<MilestoneCard milestone={mockMilestone} index={0} />);
+
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: /view test milestone - photo 1 full size/i,
+      }),
+    );
+
+    const expandedImage = screen.getByAltText("Full size view");
+    fireEvent.click(expandedImage.parentElement as HTMLElement);
+
+    expect(
+      screen.queryByRole("dialog", { name: /full size image/i }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("should restore page scrolling after the expanded image closes", () => {
+    render(<MilestoneCard milestone={mockMilestone} index={0} />);
+
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: /view test milestone - photo 1 full size/i,
+      }),
+    );
+
+    expect(document.body).toHaveStyle({ overflow: "hidden" });
+
+    fireEvent.click(screen.getByRole("dialog", { name: /full size image/i }));
+
+    expect(document.body).not.toHaveStyle({ overflow: "hidden" });
   });
 
   it("should render tags", () => {
