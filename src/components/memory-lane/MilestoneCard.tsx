@@ -122,7 +122,8 @@ export default function MilestoneCard({
     };
   }, [modalImage]);
 
-  const expandedImageDialog = modalImage
+  const canUseDocument = typeof document !== "undefined";
+  const expandedImageDialog = modalImage && canUseDocument
     ? createPortal(
         <div
           className={styles.modalOverlay}
@@ -133,7 +134,10 @@ export default function MilestoneCard({
         >
           <button
             className={styles.modalClose}
-            onClick={closeModal}
+            onClick={(e) => {
+              e.stopPropagation();
+              closeModal();
+            }}
             aria-label="Close image"
           >
             <FaTimes aria-hidden="true" />
